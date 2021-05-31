@@ -17,9 +17,8 @@
                                     <div class="col">
                                         <input
                                             type="search"
-                                            name="search"
+                                            v-model.lazy="search"
                                             class="form-control mb-2"
-                                            id="inlineFormInput"
                                             placeholder="Jane Doe"
                                         />
                                     </div>
@@ -30,6 +29,21 @@
                                         >
                                             Search
                                         </button>
+                                    </div>
+                                    <div class="col">
+                                        <select
+                                            v-model="selectedDeprtment"
+                                            name="city"
+                                            class="form-control"
+                                            aria-label="Default select example"
+                                        >
+                                            <option
+                                                v-for="department in departments"
+                                                :key="department.id"
+                                                :value="department.id"
+                                                >{{ department.name }}</option
+                                            >
+                                        </select>
                                     </div>
                                 </div>
                             </form>
@@ -71,6 +85,7 @@
                                             name: 'EmployeesEdit',
                                             params: { id: employee.id }
                                         }"
+                                        class="btn btn-success"
                                         >Edit</router-link
                                     >
                                     <button
@@ -95,21 +110,48 @@ export default {
         return {
             employees: [],
             showMessage: false,
-            message: ""
+            message: "",
+            search: null,
+            selectedDeprtment: null,
+            departments: []
         };
+    },
+    watch: {
+        search() {
+            this.getEmployees();
+        },
+        selectedDeprtment() {
+            this.getEmployees();
+        }
     },
     created() {
         this.getEmployees();
+        this.getDepartments();
     },
     methods: {
         getEmployees() {
             axios
-                .get("/api/employees")
+                .get("/api/employees", {
+                    params: {
+                        search: this.search,
+                        department_id: this.selectedDeprtment
+                    }
+                })
                 .then(res => {
                     this.employees = res.data.data;
                 })
                 .catch(error => {
                     console.log(error);
+                });
+        },
+        getDepartments() {
+            axios
+                .get("/api/employees/departments")
+                .then(res => {
+                    this.departments = res.data;
+                })
+                .catch(error => {
+                    console.log(console.error);
                 });
         },
         deleteEmployee(id) {
